@@ -1,5 +1,5 @@
-# lqbui
-vue组件库demo
+# KZui
+快准组件库
 
 
 关于Vue相关的组件库脚手架
