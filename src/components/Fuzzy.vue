@@ -4,20 +4,20 @@
         ref="sercheInput"
         @focus="isSelect = true"
         @keydown="handlerKeydown"
+        @keyup="handlerKeyup"
          placeholder="请输入字符查询" 
          v-model="inputValue" 
          class="kz-fuzzy-input" 
       type="text" />
       <span class="kz-fuzzy-type">
         <slot v-if="$slots.btn" name="btn"></slot>
-        <span @click="togleFold" class="kz-triangle-down" v-else>  
-        </span>
+        <span @click="togleFold" class="kz-triangle-down" v-else></span>
       </span>    
       <div v-show="!fold" class="kz-droplist-wrap" :style="'width:'+warpWidth">
         <div  class="popper__arrow" style="left: 35px;"></div>
         <div ref="droplist" class="kz-droplist" >
-          <div class="kz-serche-head" v-if="opts.length>1"  >
-            <span :key="index"  v-for="(item,index) in opts" :style="(!item.width?'flex:1;':'')+'width:'+item.width"  >
+          <div class="kz-serche-head" v-if="options.length>1"  >
+            <span :key="index"  v-for="(item,index) in options" :style="(!item.width?'flex:1;':'')+'width:'+item.width"  >
                 {{item.label}}
             </span> 
           </div>
@@ -27,9 +27,9 @@
               @mouseenter='handlerEnter(index)'
               :key="index" v-for="(item,index) in filterList"
                :class="'kz-list-item '+(current==index?'on':'')" >
-               <p style="display:flex;width:100%;height:100%" v-if="opts.length>0" >
+               <p style="display:flex;width:100%;height:100%" v-if="options.length>0" >
                  <span :key="index"
-                v-for="(opt,index) in opts"
+                v-for="(opt,index) in options"
                 :style="(!opt.width?'flex:1;':'')+'width:'+opt.width" 
                 >
                     {{item[opt.prop]}}
@@ -59,7 +59,7 @@ export default {
       fold: true,
       current: 0,
       isSelect: false,
-      all:true
+      all: true
     };
   },
   computed: {
@@ -75,69 +75,61 @@ export default {
       // `this` points to the vm instance
       var key = this.inputValue;
       var data = this.data;
-      if (key == "" || !this.filter||this.all) {
+      if (key == "" || this.all) {
         return data;
       }
-      return data.filter(function(item) {
-        let fit = false;
-        if (typeof item == "number" || typeof item == "string") {
-          return (
-            item
-              .toString()
-              .toLowerCase()
-              .indexOf(key.toString().toLowerCase()) != -1
-          );
-        }
-        for (let k in item) {
-          if (
-            item[k]
-              .toString()
-              .toLowerCase()
-              .indexOf(key.toString().toLowerCase()) != -1
-          ) {
-            fit = true;
-          }
-        }
-        return fit;
+      return data.filter(item => {
+        return this.filter(item);
       });
     },
-    
     warpWidth() {
-      let unm=0,ext="px";
-      if(this.opts.length>0){
-        ext=this.getEXt(this.opts[0].width)||"px";
-        for(let i=0;i<this.opts.length;i++){
-          if(this.opts[i].width){
-            unm+=parseFloat(this.opts[i].width);
+      let unm = 0,
+        ext = "px";
+      if (this.options.length > 0) {
+        ext = this.getEXt(this.options[0].width) || "px";
+        for (let i = 0; i < this.options.length; i++) {
+          if (this.options[i].width) {
+            unm += parseFloat(this.options[i].width);
           }
         }
-      };
-      if(unm==0){
+      }
+      if (unm == 0) {
         return "100%";
       }
-      return unm+ext;
+      return unm + ext;
     }
   },
   props: {
     value: {},
     data: {
       type: Array,
-      default: function(){
+      default: function() {
         return [];
       }
     },
-    opts: {
+    options: {
       type: Array,
-      default: function () {
-        return []
+      default: function() {
+        return [];
+      }
+    },
+    setVal: {
+      type: Function,
+      default: function(item) {
+        return item;
       }
     },
     filter: {
-      type: Boolean,
-      default: false
+      type: Function,
+      default: function(item) {
+        return true;
+      }
     }
   },
   methods: {
+    handlerKeyup(e) {
+      this.$emit("keyup", e);
+    },
     handlerKeydown(e) {
       if (e.code == "ArrowDown" && !this.fold) {
         this.current =
@@ -147,58 +139,74 @@ export default {
         this.current =
           (this.current + this.filterList.length - 1) % this.filterList.length;
       }
+      if (e.code == "Enter" && !this.fold) {
+        if (this.filterList[this.current]) {
+          this.rowSelect(this.filterList[this.current]);
+        }
+      }
+
       let menu = this.$refs.droplist;
       if (menu) {
         //console.log(this.$refs)
         try {
-          if(menu.children.length>1){
+          if (menu.children.length > 1) {
             let target = this.$refs.droplist.children[1].children[this.current];
-          }else{
+          } else {
             let target = this.$refs.droplist.children[0].children[this.current];
           }
           scrollIntoView(menu, target);
-        } catch (error) { }
+        } catch (error) {}
       }
-      if (e.code != "Tab") {
+      if (e.code != "Tab" && e.code != "Enter") {
         this.fold = false;
-        this.all=false;
+        this.all = false;
       }
-
+      if (e.code == "Tab") {
+        this.handlerEnd(e);
+      }
       this.$emit("keydown", e);
     },
+    rowSelect(row) {
+      this.fold = !this.fold;
+      this.inputValue = this.setVal(row);
+      this.isSelect = true;
+      this.$emit("change", row);
+    },
     handlerEnd(e) {
-      this.fold = true;
-      this.isSelect = false;
+      if (this.isSelect) {
+        this.fold = true;
+        this.isSelect = false;
+        this.$emit("end", e);
+      }
     },
     handlerEnter(i) {
       this.current = i;
     },
     handlerClick(row) {
-      this.fold = !this.fold;
-      if (typeof row == "number" || typeof row == "string") {
-        this.inputValue = row;
-      }else{
-        this.inputValue = row[this.opts[0].prop];
-      }
-      this.isSelect = true;
-      this.$emit("change", row);
+      this.rowSelect(row);
     },
     togleFold(e) {
-      this.fold = !this.fold;
+      if (e) {
+        try {
+          e.preventDefault();
+        } catch (err) {}
+      }
+      this.fold = false;
       this.isSelect = true;
-      this.all=true;
+      this.all = true;
       if (!this.fold) {
-        this.$refs.sercheInput.focus();
+        setTimeout((e)=>{
+           this.$refs.sercheInput.focus();
+        },1)
+       
       }
-      
     },
-    getEXt(str){
-      if(!str||typeof str !="string" )
-      {
-        return ""
+    getEXt(str) {
+      if (!str || typeof str != "string") {
+        return "";
       }
-      return str.replace(str.match(/(-?\d+)(\.\d+)?/)[0],"")
-    },
+      return str.replace(str.match(/(-?\d+)(\.\d+)?/)[0], "");
+    }
   },
   directives: { Clickoutside },
   mounted() {}
@@ -206,7 +214,6 @@ export default {
 </script>
 
 <style>
-
 .kz-fuzzy *::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -249,7 +256,7 @@ export default {
   padding: 0 15px;
   transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   width: 100%;
-  text-align:  inherit;
+  text-align: inherit;
 }
 .kz-fuzzy.is-focus .kz-fuzzy-input {
   border-color: #409eff;
@@ -310,7 +317,7 @@ export default {
   position: absolute;
   right: 5px;
   top: 19px;
-  margin-top: -10px;
+  margin-top: -13px;
 }
 .kz-triangle-down {
   padding: 0 5px;
@@ -331,24 +338,25 @@ export default {
   top: 8px;
 }
 .kz-fuzzy .popper__arrow {
-    top: -6px;
-    left: 50%;
-    margin-right: 3px;
-    border-top-width: 0;
-    border-bottom-color: #ebeef5;
-    border-width: 6px;
-    filter: drop-shadow(0 2px 12px rgba(0,0,0,.03));
+  top: -6px;
+  left: 50%;
+  margin-right: 3px;
+  border-top-width: 0;
+  border-bottom-color: #ebeef5;
+  border-width: 6px;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.03));
 }
 .kz-fuzzy .popper__arrow::after {
-    content: " ";
-    border-width: 6px;
+  content: " ";
+  border-width: 6px;
 }
-.kz-fuzzy .popper__arrow, .kz-fuzzy .popper__arrow::after {
-    position: absolute;
-    display: block;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
+.kz-fuzzy .popper__arrow,
+.kz-fuzzy .popper__arrow::after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
 }
 </style>

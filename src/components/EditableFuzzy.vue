@@ -1,8 +1,8 @@
 <template>
-        <span class="kz-fuzzy-fit" @click="handlerEdit" v-clickoutside="handlerEnd" >
+        <span  @focus="handlerFocus" class="kz-fuzzy-fit" @click="handlerEdit"  >
             <span  v-show="!eidt">{{inputValue}}</span>
             <span class="edits" v-show="eidt">
-                <kz-fuzzy style="width: 100%;height:100%" @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue" :data="data" :filter="filter" :opts="opts">
+                <kz-fuzzy @end="handlerEnd" ref="input" style="width: 100%;height:100%"  @keyup="handlerKeyup"  @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue" :data="data" :filter="filter" :options="options">
                     <slot v-if="$slots.default"></slot>
                     <slot v-if="$slots.btn" slot="btn" name="btn"></slot>
                 </kz-fuzzy>
@@ -38,15 +38,23 @@ export default {
         return [];
       }
     },
-    opts: {
+    options: {
       type: Array,
       default: function() {
         return [];
       }
     },
+    setVal: {
+      type: Function,
+      default: function(item) {
+        return item;
+      }
+    },
     filter: {
-      type: Boolean,
-      default: false
+      type: Function,
+      default: function(item) {
+        return true;
+      }
     }
   },
   components: {
@@ -55,14 +63,28 @@ export default {
   directives: { Clickoutside },
   mounted() {},
   methods: {
+    handlerFocus(e){
+      this.eidtCell();
+    },
+    eidtCell() {
+      this.handlerEdit();
+      this.$refs.input.togleFold();
+    },
     handlerEdit() {
       this.eidt = true;
-      setTimeout(() => {
-        this.$children[0].$refs.sercheInput.focus();
-      }, 1);
+      // setTimeout(() => {
+      //   this.$children[0].$refs.sercheInput.focus();
+      // }, 1);
     },
     handlerEnd() {
-      this.eidt = false;
+      if(this.eidt){
+         this.eidt = false;
+        this.$emit("end",this);
+      }
+     
+    },
+    handlerKeyup(e){
+      this.$emit("keyup", e);
     },
     handlerChange(e) {
       this.$emit("change", { e: e, handlerEnd: this.handlerEnd });

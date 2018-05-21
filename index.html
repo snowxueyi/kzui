@@ -12,12 +12,19 @@
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <script src="http://localhost:8080/dist/kzui.min.js"></script>
   <style>
-   .el-table th{
+   .demopage .el-table th{
       text-align: center;
       background: #f5f5f5;
     }
+    .demopage  .kz-mini-size{
+      padding: 5px 10px;
+    }
+    .demopage .el-table{
+      overflow: initial;
+    }
+    .demopage .el-table__body-wrapper{overflow: initial;}
   </style>
-  <div id="app">
+  <div id="app" class="demopage">
     <el-table
     border
       :data="list"
@@ -28,7 +35,9 @@
         label="日期"
         width="180">
         <template slot-scope="scope">
-          <kz-editable-fuzzy   @keydown="send" v-model="selVal1" :data="listtest" :filter="true" ></kz-editable-fuzzy>
+          <kz-editable-fuzzy tabindex="0"  @end="handlerEnd"  @keydown="handlerKeydown" v-model="selVal1" :data="listtest"  >
+              <el-button tabindex="-1" @end="handleClick(scope)" class="kz-mini-size" slot="btn" size="mini" type="success">选择</el-button>
+          </kz-editable-fuzzy>
         </template>
       </el-table-column>
       <el-table-column
@@ -36,7 +45,7 @@
         label="姓名"
         width="180">
         <template slot-scope="scope">
-          <kz-editable-input  @keydown="send" v-model="selVal1"  ></kz-editable-input>
+          <kz-editable-input tabindex="0" @end="handlerEnd" @keydown="handlerKeydown" v-model="selVal1"  ></kz-editable-input>
         </template>
       </el-table-column>
       <el-table-column
@@ -59,11 +68,15 @@
       mounted() {
       },
       methods: {
-        
-        send(scope,e){
-          console.log(scope,e)
-          //e.handlerEnd();
-          //scope.nextCompent.next.tabNext(scope.nextCompent)
+        handleClick(e){
+          alert("这边可以出现弹出窗");
+          console.log(e);
+        },
+        handlerKeydown(e){
+          console.log(e);
+        },
+        handlerEnd(e){
+          console.log(e)
         }
       }
     };

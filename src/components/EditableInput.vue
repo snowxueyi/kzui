@@ -1,8 +1,8 @@
 <template>
-        <span  class="kz-input-fit" @click="handlerEdit" v-clickoutside="handlerEnd" >
+        <span @focus="handlerFocus"  class="kz-input-fit" @click="handlerEdit" v-clickoutside="handlerEnd" >
             <span >{{inputValue}}</span>
             <span class="edits" v-show="eidt">
-                <input class="kz-edit-input"  ref="sercheInput"  @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue"  />
+                <input class="kz-edit-input"  ref="sercheInput" @keyup="handlerKeyup"  @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue"  />
             </span>
         </span>
 </template>
@@ -33,6 +33,12 @@ export default {
   directives: { Clickoutside },
   mounted() {},
   methods: {
+    handlerFocus(e){
+      this.handlerEdit();
+    },
+    eidtCell(){
+      this.handlerEdit();
+    },
     handlerEdit() {
       this.eidt = true;
       setTimeout(() => {
@@ -40,12 +46,21 @@ export default {
       }, 1);
     },
     handlerEnd() {
-      this.eidt = false;
+      if(this.eidt){
+        this.eidt=false;
+        this.$emit("end",this);
+      }
     },
     handlerChange(e) {
       this.$emit("change", { e: e, handlerEnd: this.handlerEnd });
     },
+    handlerKeyup(e) {
+      this.$emit("keyup", { e: e, handlerEnd: this.handlerEnd });
+    },
     handlerKeydown(e) {
+      if (e.code == "Tab") {
+       this.handlerEnd() 
+      }
       this.$emit("keydown", { e: e, handlerEnd: this.handlerEnd });
     }
   }
