@@ -79,7 +79,7 @@ export default {
         return data;
       }
       return data.filter(item => {
-        return this.filter(item);
+        return this.match(item);
       });
     },
     warpWidth() {
@@ -119,7 +119,7 @@ export default {
         return item;
       }
     },
-    filter: {
+    match: {
       type: Function,
       default: function(item) {
         return true;

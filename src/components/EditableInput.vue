@@ -1,5 +1,5 @@
 <template>
-        <span @focus="handlerFocus"  class="kz-input-fit" @click="handlerEdit" v-clickoutside="handlerEnd" >
+        <span :tabindex="tabindex" @focus="handlerFocus"  class="kz-input-fit" @click="handlerEdit" v-clickoutside="handlerEnd" >
             <span >{{inputValue}}</span>
             <span class="edits" v-show="eidt">
                 <input class="kz-edit-input"  ref="sercheInput" @keyup="handlerKeyup"  @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue"  />
@@ -27,7 +27,11 @@ export default {
     }
   },
   props: {
-    value: {}
+    value: {},
+    tabindex: {
+      type: Number,
+      default:0
+    }
   },
   components: {},
   directives: { Clickoutside },
@@ -73,6 +77,7 @@ export default {
   width: 100%;
   height: 100%;
 }
+
 .kz-input-fit .edits {
   width: 100%;
   height: 100%;

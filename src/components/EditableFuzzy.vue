@@ -1,8 +1,17 @@
 <template>
-        <span  @focus="handlerFocus" class="kz-fuzzy-fit" @click="handlerEdit"  >
+        <span :tabindex="tabindex" @focus="handlerFocus" class="kz-fuzzy-fit" @click="handlerEdit"  >
             <span  v-show="!eidt">{{inputValue}}</span>
             <span class="edits" v-show="eidt">
-                <kz-fuzzy @end="handlerEnd" ref="input" style="width: 100%;height:100%"  @keyup="handlerKeyup"  @change="handlerChange" @keydown="handlerKeydown" v-model="inputValue" :data="data" :filter="filter" :options="options">
+                <kz-fuzzy @end="handlerEnd" ref="input" 
+                :set-val="setVal" 
+                :match="match"
+                 style="width: 100%;height:100%"
+                   @keyup="handlerKeyup"  
+                   @change="handlerChange" 
+                   @keydown="handlerKeydown" 
+                   v-model="inputValue" 
+                   :data="data" 
+                :options="options">
                     <slot v-if="$slots.default"></slot>
                     <slot v-if="$slots.btn" slot="btn" name="btn"></slot>
                 </kz-fuzzy>
@@ -50,18 +59,23 @@ export default {
         return item;
       }
     },
-    filter: {
+    match: {
       type: Function,
       default: function(item) {
         return true;
       }
+    },
+    tabindex: {
+      type: Number,
+      default:0
     }
   },
   components: {
     KzFuzzy
   },
   directives: { Clickoutside },
-  mounted() {},
+  mounted() {
+  },
   methods: {
     handlerFocus(e){
       this.eidtCell();
