@@ -78,7 +78,7 @@ export default {
       if (key == "" || this.all) {
         return data;
       }
-      return data.filter(item => {
+      return data.filter((item) => {
         return this.match(item);
       });
     },
