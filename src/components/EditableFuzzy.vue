@@ -5,6 +5,7 @@
                 <kz-fuzzy @end="handlerEnd" ref="input" 
                 :set-val="setVal" 
                 :match="match"
+                :fitcount="fitcount"
                  style="width: 100%;height:100%"
                    @keyup="handlerKeyup"  
                    @change="handlerChange" 
@@ -41,6 +42,10 @@ export default {
   },
   props: {
     value: {},
+     fitcount:{
+      type:Number,
+      default:20
+    },
     data: {
       type: Array,
       default: function() {

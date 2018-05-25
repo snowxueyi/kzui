@@ -13,6 +13,10 @@
         <slot v-if="$slots.btn" name="btn"></slot>
         <span @click="togleFold" class="kz-triangle-down" v-else></span>
       </span>    
+      <transition
+      name="el-zoom-in-top"
+      @before-enter="handleMenuEnter"
+      @after-leave="doDestroy">
       <div v-show="!fold" class="kz-droplist-wrap" :style="'width:'+warpWidth">
         <div  class="popper__arrow" style="left: 35px;"></div>
         <div ref="droplist" class="kz-droplist" >
@@ -26,6 +30,7 @@
               @click='handlerClick(item)' 
               @mouseenter='handlerEnter(index)'
               :key="index" v-for="(item,index) in filterList"
+               v-if="index<fitcount"
                :class="'kz-list-item '+(current==index?'on':'')" >
                <p style="display:flex;width:100%;height:100%" v-if="options.length>0" >
                  <span :key="index"
@@ -46,6 +51,7 @@
         </div>
         <slot></slot>
       </div>  
+      </transition>
   </div>
 </template>
 
@@ -59,7 +65,8 @@ export default {
       fold: true,
       current: 0,
       isSelect: false,
-      all: true
+      all: true,
+
     };
   },
   computed: {
@@ -101,6 +108,10 @@ export default {
   },
   props: {
     value: {},
+    fitcount:{
+      type:Number,
+      default:20
+    },
     data: {
       type: Array,
       default: function() {
